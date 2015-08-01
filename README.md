@@ -3,7 +3,7 @@ Password Recovery Class for Visual Basic .NET
 # Installation in your project
 Add SQLiteHandler.vb and prec.vb to your project
 # Example Usage
-For Each Drive As DriveInfo In DriveInfo.GetDrives
+```For Each Drive As DriveInfo In DriveInfo.GetDrives
 	If Drive.RootDirectory.FullName = "C:\" Then
 		Dim x As New PREC(Drive)
 		With x
@@ -18,4 +18,4 @@ For Each Drive As DriveInfo In DriveInfo.GetDrives
 			MsgBox(A.Type.ToString & vbCrLf & A.Domain & vbCrLf & A.Username & vbCrLf & A.Password)
 		Next
 	End If
-Next
+Next```
