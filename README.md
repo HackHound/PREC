@@ -19,4 +19,4 @@ For Each Drive As DriveInfo In DriveInfo.GetDrives
 			MsgBox(A.Type.ToString & vbCrLf & A.Domain & vbCrLf & A.Username & vbCrLf & A.Password)
 		Next
 	End If
-Next```
+Next
