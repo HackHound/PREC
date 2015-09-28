@@ -246,8 +246,7 @@ Public Class SQLiteHandler
         If db_bytes(Offset) = &HD Then 'Leaf node
 
             'Length for setting the array length for the entries
-            'As Int16?
-            Dim Length = ConvertToInteger(Offset + 3, 2) - 1
+            Dim Length As UInt16 = ConvertToInteger(Offset + 3, 2) - 1
             Dim ol As Integer = 0
 
             If Not table_entries Is Nothing Then
@@ -359,7 +358,7 @@ Public Class SQLiteHandler
 
         If found = -1 Then Return False
 
-        Dim fields() = master_table_entries(found).sql_statement.Substring(master_table_entries(found).sql_statement.IndexOf("(") + 1).Split(",")
+        Dim fields() = master_table_entries(found).sql_statement.Substring(master_table_entries(found).​sql_statement.IndexOf("(") + 1).Split(",")
 
         For i = 0 To fields.Length - 1 Step 1
             fields(i) = LTrim(fields(i))
@@ -443,10 +442,8 @@ Public Class SQLiteHandler
             If db_bytes(52) <> 0 Then
                 Throw New Exception("Auto-vacuum capable database is not supported")
                 End
-                'ElseIf ConvertToInteger(44, 4) >= 4 Then
-                '    Throw New Exception("No supported Schema layer file-format")
-                '    End
-                'Opera support!
+            ElseIf ConvertToInteger(44, 4) >= 4 Then
+
             End If
 
             page_size = ConvertToInteger(16, 2)

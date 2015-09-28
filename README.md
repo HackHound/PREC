@@ -14,6 +14,7 @@ For Each Drive As DriveInfo In DriveInfo.GetDrives
 			.RecoverOpera()
 			.RecoverPidgin()
 			.RecoverThunderbird()
+			.RecoverProxifier()
 		End With
 		For Each A As Account In x.Accounts
 			MsgBox(A.ToString())
