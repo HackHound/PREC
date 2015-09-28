@@ -169,7 +169,10 @@ Class PREC
                 Next
             Next
             Return True
-        Catch
+        Catch e As Exception
+#If DEBUG Then
+            Throw e
+#End If
             Return False
         End Try
     End Function
@@ -191,7 +194,10 @@ Class PREC
                 Next
             Next
             Return True
-        Catch
+        Catch e As Exception
+#If DEBUG Then
+            Throw e
+#End If
             Return False
         End Try
     End Function
@@ -272,6 +278,10 @@ Class PREC
             result = True
         Catch e As Exception
 #If DEBUG Then
+            'An unhandled exception of type 'System.NullReferenceException' occurred in x
+            'Additional Information: Object reference Not set to an instance of an object.
+
+            'The error above most likely means you are compiling to other than x86 architecture
             Throw e
 #End If
             result = False
@@ -312,6 +322,9 @@ Class PREC
             Next
             result = True
         Catch e As Exception
+#If DEBUG Then
+            Throw e
+#End If
             result = False
         End Try
         Wow64RevertWow64FsRedirection(ptr)
@@ -338,7 +351,10 @@ Class PREC
                 End If
             Next
             Return True
-        Catch
+        Catch e As Exception
+#If DEBUG Then
+            Throw e
+#End If
             Return False
         End Try
     End Function
@@ -360,7 +376,10 @@ Class PREC
                 Doc = Nothing
             Next
             Return True
-        Catch
+        Catch e As Exception
+#If DEBUG Then
+            Throw e
+#End If
             Return False
         End Try
     End Function
