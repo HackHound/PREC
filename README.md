@@ -16,7 +16,7 @@ For Each Drive As DriveInfo In DriveInfo.GetDrives
 			.RecoverThunderbird()
 		End With
 		For Each A As Account In x.Accounts
-			MsgBox(A.Type.ToString & vbCrLf & A.Domain & vbCrLf & A.Username & vbCrLf & A.Password)
+			MsgBox(A.ToString())
 		Next
 	End If
 Next

