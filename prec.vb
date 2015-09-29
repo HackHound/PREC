@@ -42,22 +42,22 @@ Imports System.Xml
 Class PREC
 #Region "Win32/API+Other libs"
 #Region "Shared"
-    <DllImport("Crypt32.dll", SetLastError:=True, CharSet:=CharSet.Auto)>
+    <DllImport("Crypt32.dll", SetLastError:=True, CharSet:=CharSet.Auto)> _
     Private Shared Function CryptUnprotectData(ByRef pDataIn As DATA_BLOB, ByVal szDataDescr As String, ByRef pOptionalEntropy As DATA_BLOB, ByVal pvReserved As IntPtr, ByRef pPromptStruct As CRYPTPROTECT_PROMPTSTRUCT, ByVal dwFlags As Integer, ByRef pDataOut As DATA_BLOB) As Boolean
     End Function
-    <Flags()>
+    <Flags()> _
     Private Enum CryptProtectPromptFlags
         CRYPTPROTECT_PROMPT_ON_UNPROTECT = &H1
         CRYPTPROTECT_PROMPT_ON_PROTECT = &H2
     End Enum
-    <StructLayout(LayoutKind.Sequential, CharSet:=CharSet.Unicode)>
+    <StructLayout(LayoutKind.Sequential, CharSet:=CharSet.Unicode)> _
     Private Structure CRYPTPROTECT_PROMPTSTRUCT
         Public cbSize As Integer
         Public dwPromptFlags As CryptProtectPromptFlags
         Public hwndApp As IntPtr
         Public szPrompt As String
     End Structure
-    <StructLayout(LayoutKind.Sequential, CharSet:=CharSet.Unicode)>
+    <StructLayout(LayoutKind.Sequential, CharSet:=CharSet.Unicode)> _
     Private Structure DATA_BLOB
         Public cbData As Integer
         Public pbData As IntPtr
@@ -80,7 +80,7 @@ Class PREC
     Private NSS3 As IntPtr
     Private hModuleList As New List(Of IntPtr)
 
-    <StructLayout(LayoutKind.Sequential)>
+    <StructLayout(LayoutKind.Sequential)> _
     Private Structure TSECItem
         Public SECItemType As Integer
         Public SECItemData As Integer
@@ -116,11 +116,11 @@ Class PREC
         Return CreateAPI(Of DLLFunctionDelegate6)(NSS3, "NSS_Shutdown")()
     End Function
 
-    <DllImport("kernel32.dll", SetLastError:=True, CharSet:=CharSet.Auto)>
+    <DllImport("kernel32.dll", SetLastError:=True, CharSet:=CharSet.Auto)> _
     Private Shared Function LoadLibrary(ByVal dllFilePath As String) As IntPtr
     End Function
 
-    <DllImport("kernel32.dll", SetLastError:=True, EntryPoint:="FreeLibrary")>
+    <DllImport("kernel32.dll", SetLastError:=True, EntryPoint:="FreeLibrary")> _
     Private Shared Function FreeLibrary(ByVal hModule As IntPtr) As Boolean
     End Function
 
