@@ -21,7 +21,7 @@ For Each Drive As DriveInfo In DriveInfo.GetDrives
 		Next
 	End If
 Next
-
+```
 # Recovers passwords for the following apps
 * Google Chrome (45.0.2454)
 * FileZilla (3.13.0)
