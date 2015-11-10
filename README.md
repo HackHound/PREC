@@ -10,7 +10,7 @@ For Each Drive As DriveInfo In DriveInfo.GetDrives
 		With x
 			.RecoverChrome()
 			.RecoverFileZilla()
-			.RecoverFireFox()
+			.RecoverFirefox()
 			.RecoverOpera()
 			.RecoverPidgin()
 			.RecoverThunderbird()
