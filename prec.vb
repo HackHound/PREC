@@ -239,7 +239,7 @@ Class PREC
         Return String.Empty
     End Function
 
-    Public Function RecoverFireFox() As Boolean
+    Public Function RecoverFirefox() As Boolean
         Try
             For Each AppData As String In GetAppDataFolders()
                 Dim mozProfilePath As String = FindFirefoxProfilePath(AppData)
