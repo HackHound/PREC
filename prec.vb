@@ -207,7 +207,7 @@ Class PREC
     Private Function FindFirefoxProfilePath(ByVal AppDataDir As String) As String
         Dim mozAPPDATA As String = AppDataDir & "\Roaming\Mozilla\Firefox"
         If Not IO.Directory.Exists(mozAPPDATA) Then Return String.Empty : Exit Function
-        Dim mozProfile = New Regex("Path=([A-z0-9\/\.]+)").Match(IO.File.ReadAllText(mozAPPDATA & "\profiles.ini")).Groups(1).Value
+        Dim mozProfile = New Regex("^Path=(.*?)$", RegexOptions.Multiline).Match(IO.File.ReadAllText(mozAPPDATA & "\profiles.ini")).Groups(1).Value.Replace(vbCr, Nothing)
         Return mozAPPDATA & "\" & mozProfile
     End Function
 
@@ -279,7 +279,7 @@ Class PREC
     Private Function FindThunderbirdProfilePath(ByVal AppDataDir As String) As String
         Dim mozThunderAPPDATA As String = AppDataDir & "\Roaming\Thunderbird"
         If Not IO.Directory.Exists(mozThunderAPPDATA) Then Return String.Empty : Exit Function
-        Dim mozProfile = New Regex("Path=([A-z0-9\/\.]+)").Match(IO.File.ReadAllText(mozThunderAPPDATA & "\profiles.ini")).Groups(1).Value
+        Dim mozProfile = New Regex("Path=(.*?)$", RegexOptions.Multiline).Match(IO.File.ReadAllText(mozThunderAPPDATA & "\profiles.ini")).Groups(1).Value.Replace(vbCr, Nothing)
         Return mozThunderAPPDATA & "\" & mozProfile
     End Function
     Public Function RecoverThunderbird() As Boolean
