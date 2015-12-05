@@ -24,9 +24,9 @@ Next
 ```
 # Recovers passwords for the following apps
 * Google Chrome (45.0.2454)
-* FileZilla (3.13.0)
-* Mozilla Firefox (40.0.3) **Also supports 42.0b1 beta release!**
-* Opera Webbrowser (32.0)
+* FileZilla (3.14.1.0)
+* Mozilla Firefox (42.0.0.5780)
+* Opera Webbrowser (33.0.1990.115)
 * Pidgin (2.10.11/libpurple 2.10.11)
 * Mozilla Thunderbird (38.2.0)
 * Proxifier (3.15) **Does not currently decrypt passwords**
